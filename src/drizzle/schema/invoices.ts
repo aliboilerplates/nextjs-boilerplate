@@ -1,18 +1,17 @@
 import { relations, sql } from "drizzle-orm";
 import * as pg from "drizzle-orm/pg-core";
 import { customer } from "./customers";
+import { timeStamps } from "./shared";
 
 export const invoice = pg.pgTable(
   "invoice",
   {
-    id: pg
-      .uuid("id")
-      .primaryKey()
-      .default(sql`uuid_generate_v4()`),
+    id: pg.uuid("id").primaryKey().defaultRandom(),
     customerId: pg.uuid("customer_id").references(() => customer.id),
     amount: pg.integer("amount").notNull(),
     status: pg.varchar("status", { length: 20 }).notNull().default("pending"),
     date: pg.date("date").notNull(),
+    ...timeStamps,
   },
   (table) => [
     pg.check("status_check", sql`${table.status} IN ('pending', 'paid')`),
