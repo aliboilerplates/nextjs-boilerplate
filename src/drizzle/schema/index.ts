@@ -1,3 +1,4 @@
-export { categories, categoriesRelations } from "./categories";
-export { posts, postsRelations } from "./posts";
-export { tops, topsRelations } from "./tops";
+export { customer, customerRelations } from "./customers";
+export { invoice, invoiceRelations } from "./invoices";
+export { revenue } from "./revenue";
+export { user } from "./users";

@@ -2,7 +2,7 @@ import { db } from "@/drizzle/db";
 import { categories, posts } from "@/drizzle/schema";
 import { tops } from "./schema/tops";
 
-async function seed() {
+export async function seed() {
   await db.insert(categories).values([
     {
       name: "Technology",
@@ -57,5 +57,3 @@ async function seed() {
 
   await db.insert(tops).values([{ postId: 3 }, { postId: 6 }, { postId: 4 }]);
 }
-
-seed();
