@@ -1,26 +1,27 @@
-// import postgres from 'postgres';
+import { db } from "@/drizzle/db";
+import { customer, invoice } from "@/drizzle/schema";
+import { eq } from "drizzle-orm";
 
-// const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
-
-// async function listInvoices() {
-// 	const data = await sql`
-//     SELECT invoices.amount, customers.name
-//     FROM invoices
-//     JOIN customers ON invoices.customer_id = customers.id
-//     WHERE invoices.amount = 666;
-//   `;
-
-// 	return data;
-// }
+async function listInvoices() {
+  try {
+    return await db
+      .select({
+        amount: invoice.amount,
+        name: customer.name,
+      })
+      .from(invoice)
+      .innerJoin(customer, eq(invoice.customerId, customer.id))
+      .where(eq(invoice.amount, 666));
+  } catch (error) {
+    console.error("Error listing invoices", error);
+    throw new Error("Failed to list invoices");
+  }
+}
 
 export async function GET() {
-  return Response.json({
-    message:
-      'Uncomment this file and remove this line. You can delete this file when you are finished.',
-  });
-  // try {
-  // 	return Response.json(await listInvoices());
-  // } catch (error) {
-  // 	return Response.json({ error }, { status: 500 });
-  // }
+  try {
+    return Response.json(await listInvoices());
+  } catch (error) {
+    return Response.json({ error }, { status: 500 });
+  }
 }

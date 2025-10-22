@@ -10,19 +10,22 @@ import {
 
 export async function seed() {
   try {
-    await db.insert(user).values(
-      usersData.map((user) => ({
-        name: user.name,
-        email: user.email,
-        password: bcrypt.hashSync(user.password, 10),
-      }))
-    );
+    await db
+      .insert(user)
+      .values(
+        usersData.map((user) => ({
+          name: user.name,
+          email: user.email,
+          password: bcrypt.hashSync(user.password, 10),
+        }))
+      )
+      .onConflictDoNothing();
 
-    await db.insert(customer).values(customersData);
+    await db.insert(customer).values(customersData).onConflictDoNothing();
 
-    await db.insert(invoice).values(invoicesData);
+    await db.insert(invoice).values(invoicesData).onConflictDoNothing();
 
-    await db.insert(revenue).values(revenueData);
+    await db.insert(revenue).values(revenueData).onConflictDoNothing();
   } catch (error) {
     console.error("Error seeding database", error);
     throw error;

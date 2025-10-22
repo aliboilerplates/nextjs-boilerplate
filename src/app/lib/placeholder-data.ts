@@ -1,5 +1,6 @@
 // This file contains placeholder data that you'll be replacing with real data in the Data Fetching chapter:
 
+import { NewCustomer, NewInvoice, NewRevenue } from "./definitions";
 import { monthYearToDate } from "./utils";
 
 // https://nextjs.org/learn/dashboard-app/fetching-data
@@ -12,7 +13,7 @@ const usersData = [
   },
 ];
 
-const customersData = [
+const customersData: NewCustomer[] = [
   {
     id: "d6e15727-9fe1-4961-8c5b-ea44a9bd81aa",
     name: "Evil Rabbit",
@@ -51,88 +52,88 @@ const customersData = [
   },
 ];
 
-const invoicesData = [
+const invoicesData: NewInvoice[] = [
   {
-    customer_id: customersData[0].id,
+    customerId: customersData[0].id,
     amount: 15795,
     status: "pending",
     date: "2022-12-06",
   },
   {
-    customer_id: customersData[1].id,
+    customerId: customersData[1].id,
     amount: 20348,
     status: "pending",
     date: "2022-11-14",
   },
   {
-    customer_id: customersData[4].id,
+    customerId: customersData[4].id,
     amount: 3040,
     status: "paid",
     date: "2022-10-29",
   },
   {
-    customer_id: customersData[3].id,
+    customerId: customersData[3].id,
     amount: 44800,
     status: "paid",
     date: "2023-09-10",
   },
   {
-    customer_id: customersData[5].id,
+    customerId: customersData[5].id,
     amount: 34577,
     status: "pending",
     date: "2023-08-05",
   },
   {
-    customer_id: customersData[2].id,
+    customerId: customersData[2].id,
     amount: 54246,
     status: "pending",
     date: "2023-07-16",
   },
   {
-    customer_id: customersData[0].id,
+    customerId: customersData[0].id,
     amount: 666,
     status: "pending",
     date: "2023-06-27",
   },
   {
-    customer_id: customersData[3].id,
+    customerId: customersData[3].id,
     amount: 32545,
     status: "paid",
     date: "2023-06-09",
   },
   {
-    customer_id: customersData[4].id,
+    customerId: customersData[4].id,
     amount: 1250,
     status: "paid",
     date: "2023-06-17",
   },
   {
-    customer_id: customersData[5].id,
+    customerId: customersData[5].id,
     amount: 8546,
     status: "paid",
     date: "2023-06-07",
   },
   {
-    customer_id: customersData[1].id,
+    customerId: customersData[1].id,
     amount: 500,
     status: "paid",
     date: "2023-08-19",
   },
   {
-    customer_id: customersData[5].id,
+    customerId: customersData[5].id,
     amount: 8945,
     status: "paid",
     date: "2023-06-03",
   },
   {
-    customer_id: customersData[2].id,
+    customerId: customersData[2].id,
     amount: 1000,
     status: "paid",
     date: "2022-06-05",
   },
 ];
 
-const revenueData = [
+const revenueData: NewRevenue[] = [
   { period: monthYearToDate(2022, 1), revenue: 2000 },
   { period: monthYearToDate(2022, 2), revenue: 1800 },
   { period: monthYearToDate(2022, 3), revenue: 2200 },

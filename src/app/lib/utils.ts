@@ -1,4 +1,4 @@
-import { Revenue } from "./definitions";
+import { NewRevenue } from "./definitions";
 
 export const formatCurrency = (amount: number) => {
   return (amount / 100).toLocaleString("en-US", {
@@ -21,7 +21,7 @@ export const formatDateToLocal = (
   return formatter.format(date);
 };
 
-export const generateYAxis = (revenue: Revenue[]) => {
+export const generateYAxis = (revenue: NewRevenue[]) => {
   // Calculate what labels we need to display on the y-axis
   // based on highest record and in 1000s
   const yAxisLabels = [];
@@ -69,5 +69,7 @@ export const generatePagination = (currentPage: number, totalPages: number) => {
 };
 
 export function monthYearToDate(year: number, month: number): string {
-  return new Date(year, month - 1, 1).toISOString().slice(0, 10);
+  return new Date(Date.UTC(year, Math.max(0, Math.min(11, month - 1)), 1))
+    .toISOString()
+    .slice(0, 10);
 }
