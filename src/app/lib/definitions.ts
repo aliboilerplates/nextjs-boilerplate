@@ -4,18 +4,22 @@ import { revenue } from "@/drizzle/schema/revenue";
 import { user } from "@/drizzle/schema/users";
 
 export type NewUser = typeof user.$inferInsert;
+export type User = typeof user.$inferSelect;
 
 export type NewCustomer = typeof customer.$inferInsert;
+export type Customer = typeof customer.$inferSelect;
 
 export type NewInvoice = typeof invoice.$inferInsert;
+export type Invoice = typeof invoice.$inferSelect;
 
 export type NewRevenue = typeof revenue.$inferInsert;
+export type Revenue = typeof revenue.$inferSelect;
 
 export type LatestInvoice = {
-  id: string;
-  name: string;
-  image_url: string;
-  email: string;
+  id: Invoice["id"];
+  name: Customer["name"];
+  imageUrl: Customer["imageUrl"];
+  email: Customer["email"];
   amount: string;
 };
 

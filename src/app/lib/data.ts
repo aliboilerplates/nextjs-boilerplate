@@ -4,24 +4,27 @@ import {
   CustomersTableType,
   InvoiceForm,
   InvoicesTable,
+  LatestInvoice,
   LatestInvoiceRaw,
   NewRevenue,
+  Revenue,
 } from "./definitions";
 import { formatCurrency } from "./utils";
+import { db } from "@/drizzle/db";
+import { revenue } from "@/drizzle/schema/revenue";
+import { customer, invoice } from "@/drizzle/schema";
+import { count, desc, eq, sum, sql as drizzleSql } from "drizzle-orm";
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
 
-export async function fetchRevenue() {
+export async function fetchRevenue(): Promise<Revenue[]> {
   try {
-    // Artificially delay a response for demo purposes.
-    // Don't do this in production :)
+    console.log("Fetching revenue data...");
+    await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    // console.log('Fetching revenue data...');
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
+    const data = await db.select().from(revenue);
 
-    const data = await sql<NewRevenue[]>`SELECT * FROM revenue`;
-
-    // console.log('Data fetch completed after 3 seconds.');
+    console.log("Data fetch completed after 5 seconds.");
 
     return data;
   } catch (error) {
@@ -30,19 +33,30 @@ export async function fetchRevenue() {
   }
 }
 
-export async function fetchLatestInvoices() {
+export async function fetchLatestInvoices(): Promise<LatestInvoice[]> {
   try {
-    const data = await sql<LatestInvoiceRaw[]>`
-      SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      ORDER BY invoices.date DESC
-      LIMIT 5`;
+    console.log("Fetching latest invoices...");
+    await new Promise((resolve) => setTimeout(resolve, 8000));
+
+    const data = await db
+      .select({
+        id: invoice.id,
+        amount: invoice.amount,
+        name: customer.name,
+        imageUrl: customer.imageUrl,
+        email: customer.email,
+      })
+      .from(invoice)
+      .innerJoin(customer, eq(invoice.customerId, customer.id))
+      .orderBy(desc(invoice.date))
+      .limit(5);
 
     const latestInvoices = data.map((invoice) => ({
       ...invoice,
       amount: formatCurrency(invoice.amount),
     }));
+
+    console.log("Latest invoices fetched after 8 seconds.");
     return latestInvoices;
   } catch (error) {
     console.error("Database Error:", error);
@@ -52,15 +66,18 @@ export async function fetchLatestInvoices() {
 
 export async function fetchCardData() {
   try {
-    // You can probably combine these into a single SQL query
-    // However, we are intentionally splitting them to demonstrate
-    // how to initialize multiple queries in parallel with JS.
-    const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
-    const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
-    const invoiceStatusPromise = sql`SELECT
-         SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
-         SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
-         FROM invoices`;
+    const invoiceCountPromise = db.select({ count: count() }).from(invoice);
+    const customerCountPromise = db.select({ count: count() }).from(customer);
+    const invoiceStatusPromise = db
+      .select({
+        paid: sum(
+          drizzleSql<number>`CASE WHEN ${invoice.status} = 'paid' THEN ${invoice.amount} ELSE 0 END`
+        ).as("paid"),
+        pending: sum(
+          drizzleSql<number>`CASE WHEN ${invoice.status} = 'pending' THEN ${invoice.amount} ELSE 0 END`
+        ).as("pending"),
+      })
+      .from(invoice);
 
     const data = await Promise.all([
       invoiceCountPromise,
@@ -70,8 +87,10 @@ export async function fetchCardData() {
 
     const numberOfInvoices = Number(data[0][0].count ?? "0");
     const numberOfCustomers = Number(data[1][0].count ?? "0");
-    const totalPaidInvoices = formatCurrency(data[2][0].paid ?? "0");
-    const totalPendingInvoices = formatCurrency(data[2][0].pending ?? "0");
+    const totalPaidInvoices = formatCurrency(Number(data[2][0].paid ?? "0"));
+    const totalPendingInvoices = formatCurrency(
+      Number(data[2][0].pending ?? "0")
+    );
 
     return {
       numberOfCustomers,

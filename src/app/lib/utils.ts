@@ -73,3 +73,11 @@ export function monthYearToDate(year: number, month: number): string {
     .toISOString()
     .slice(0, 10);
 }
+
+export function formatDateToLocalMonth(date: string): string {
+  return new Date(date).toLocaleString("default", { month: "short" });
+}
+
+export async function waitFor(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
