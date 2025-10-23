@@ -13,7 +13,15 @@ import { formatCurrency } from "./utils";
 import { db } from "@/drizzle/db";
 import { revenue } from "@/drizzle/schema/revenue";
 import { customer, invoice } from "@/drizzle/schema";
-import { count, desc, eq, sum, sql as drizzleSql } from "drizzle-orm";
+import {
+  count,
+  desc,
+  eq,
+  sum,
+  sql as drizzleSql,
+  ilike,
+  or,
+} from "drizzle-orm";
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
 
@@ -104,36 +112,53 @@ export async function fetchCardData() {
   }
 }
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 5;
 export async function fetchFilteredInvoices(
   query: string,
   currentPage: number
-) {
+): Promise<{ invoices: InvoicesTable[]; totalPages: number }> {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
-    const invoices = await sql<InvoicesTable[]>`
-      SELECT
-        invoices.id,
-        invoices.amount,
-        invoices.date,
-        invoices.status,
-        customers.name,
-        customers.email,
-        customers.image_url
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      WHERE
-        customers.name ILIKE ${`%${query}%`} OR
-        customers.email ILIKE ${`%${query}%`} OR
-        invoices.amount::text ILIKE ${`%${query}%`} OR
-        invoices.date::text ILIKE ${`%${query}%`} OR
-        invoices.status ILIKE ${`%${query}%`}
-      ORDER BY invoices.date DESC
-      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-    `;
+    const data = await db
+      .select({
+        id: invoice.id,
+        amount: invoice.amount,
+        date: invoice.date,
+        status: invoice.status,
+        name: customer.name,
+        email: customer.email,
+        imageUrl: customer.imageUrl,
+        totalCount: drizzleSql<number>`COUNT(*) OVER ()::int`,
+      })
+      .from(invoice)
+      .innerJoin(customer, eq(invoice.customerId, customer.id))
+      .where(
+        or(
+          ilike(customer.name, `%${query}%`),
+          ilike(customer.email, `%${query}%`),
+          ilike(drizzleSql<string>`${invoice.amount}::text`, `%${query}%`),
+          ilike(drizzleSql<string>`${invoice.date}::text`, `%${query}%`),
+          ilike(invoice.status, `%${query}%`)
+        )
+      )
+      .orderBy(desc(invoice.date))
+      .limit(ITEMS_PER_PAGE)
+      .offset(offset);
 
-    return invoices;
+    const firstInvoice = data[0];
+    const totalCount = firstInvoice?.totalCount ?? 0;
+    const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+
+    const invoicesWithoutTotalCount = data.map(
+      ({ totalCount, ...invoice }) => ({
+        ...invoice,
+      })
+    );
+    return {
+      invoices: invoicesWithoutTotalCount,
+      totalPages,
+    };
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch invoices.");
