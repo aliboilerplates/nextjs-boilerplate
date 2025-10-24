@@ -7,7 +7,10 @@ export const invoice = pg.pgTable(
   "invoice",
   {
     id: pg.uuid("id").primaryKey().defaultRandom(),
-    customerId: pg.uuid("customer_id").references(() => customer.id),
+    customerId: pg
+      .uuid("customer_id")
+      .notNull()
+      .references(() => customer.id),
     amount: pg.integer("amount").notNull(),
     status: pg.varchar("status", { length: 20 }).notNull().default("pending"),
     date: pg.date("date").notNull(),

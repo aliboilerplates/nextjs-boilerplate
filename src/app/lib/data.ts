@@ -21,6 +21,7 @@ import {
   sql as drizzleSql,
   ilike,
   or,
+  asc,
 } from "drizzle-orm";
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
@@ -186,42 +187,42 @@ export async function fetchInvoicesPages(query: string) {
   }
 }
 
-export async function fetchInvoiceById(id: string) {
+export async function fetchInvoiceById(
+  id: string
+): Promise<InvoiceForm | undefined> {
   try {
-    const data = await sql<InvoiceForm[]>`
-      SELECT
-        invoices.id,
-        invoices.customer_id,
-        invoices.amount,
-        invoices.status
-      FROM invoices
-      WHERE invoices.id = ${id};
-    `;
+    const invoiceData = await db.query.invoice.findFirst({
+      columns: {
+        id: true,
+        customerId: true,
+        amount: true,
+        status: true,
+      },
+      where: eq(invoice.id, id),
+    });
 
-    const invoice = data.map((invoice) => ({
-      ...invoice,
-      // Convert amount from cents to dollars
-      amount: invoice.amount / 100,
-    }));
-
-    return invoice[0];
+    if (invoiceData) {
+      return {
+        ...invoiceData,
+        amount: invoiceData.amount / 100,
+      } as InvoiceForm;
+    }
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch invoice.");
   }
 }
 
-export async function fetchCustomers() {
+export async function fetchCustomers(): Promise<CustomerField[]> {
   try {
-    const customers = await sql<CustomerField[]>`
-      SELECT
-        id,
-        name
-      FROM customers
-      ORDER BY name ASC
-    `;
-
-    return customers;
+    return await db
+      .select({
+        id: customer.id,
+        name: customer.name,
+      })
+      .from(customer)
+      .orderBy(asc(customer.name))
+      .limit(100);
   } catch (err) {
     console.error("Database Error:", err);
     throw new Error("Failed to fetch all customers.");
