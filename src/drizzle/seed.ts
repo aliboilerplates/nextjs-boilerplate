@@ -26,8 +26,10 @@ export async function seed() {
     await db.insert(invoice).values(invoicesData).onConflictDoNothing();
 
     await db.insert(revenue).values(revenueData).onConflictDoNothing();
+    console.log("Database seeding successfully");
   } catch (error) {
     console.error("Error seeding database", error);
     throw error;
   }
 }
+

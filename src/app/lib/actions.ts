@@ -34,7 +34,6 @@ export async function createInvoice(formData: FormData) {
     amount: formData.get("amount"),
     status: formData.get("status"),
   });
-  console.log(Array.from(formData.entries()));
   if (!result.success) {
     return;
   }
@@ -76,4 +75,9 @@ export async function updateInvoice(id: string, formData: FormData) {
 
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
+}
+
+export async function deleteInvoice(id: string) {
+  await db.delete(invoice).where(eq(invoice.id, id));  
+  revalidatePath("/dashboard/invoices")
 }

@@ -15,7 +15,6 @@ interface DefaultPageProps {
 }
 
 export default async function Page(props: DefaultPageProps) {
-  console.log(props.searchParams);
   const searchParams = await props.searchParams;
   const query = searchParams?.query || "";
   const currentPage = Number(searchParams?.page) || 1;

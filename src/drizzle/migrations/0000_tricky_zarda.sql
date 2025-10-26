@@ -10,7 +10,7 @@ CREATE TABLE "customer" (
 --> statement-breakpoint
 CREATE TABLE "invoice" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"customer_id" uuid,
+	"customer_id" uuid NOT NULL,
 	"amount" integer NOT NULL,
 	"status" varchar(20) DEFAULT 'pending' NOT NULL,
 	"date" date NOT NULL,

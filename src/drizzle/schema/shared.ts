@@ -7,7 +7,7 @@ export const timeStamps = {
     .notNull()
     .defaultNow(),
   updatedAt: pg
-    .timestamp("updated_at", { withTimezone: true })
+    .timestamp("updated_at", { withTimezone: true ,mode: "string"})
     .notNull()
     .defaultNow()
     .$onUpdate(() => sql`NOW()`),
